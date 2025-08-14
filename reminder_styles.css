@@ -1,0 +1,218 @@
+/* 提醒記事本樣式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Microsoft JhengHei', Arial, sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+h2 {
+    margin-top: 30px;
+    margin-bottom: 20px;
+    color: #2c3e50;
+    border-bottom: 2px solid #ecf0f1;
+    padding-bottom: 10px;
+}
+
+.app-description {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #7f8c8d;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="date"],
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+textarea:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+}
+
+textarea {
+    height: 100px;
+    resize: vertical;
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+.reminder-list {
+    margin-top: 40px;
+}
+
+.reminder-item {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 5px solid #3498db;
+}
+
+.reminder-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.reminder-item.upcoming {
+    border-left: 5px solid #e74c3c;
+    background-color: #fadbd8;
+}
+
+.reminder-title {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 5px;
+    padding-right: 40px; /* 為刪除按鈕留出空間 */
+}
+
+.reminder-date {
+    color: #7f8c8d;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.reminder-content {
+    margin-bottom: 10px;
+    line-height: 1.5;
+    white-space: pre-line; /* 保留換行 */
+}
+
+.reminder-alert {
+    color: #e74c3c;
+    font-weight: bold;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.delete-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.delete-btn:hover {
+    background-color: #c0392b;
+    transform: scale(1.1);
+}
+
+.no-reminders {
+    text-align: center;
+    color: #7f8c8d;
+    font-style: italic;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+    }
+    
+    h1 {
+        font-size: 24px;
+    }
+    
+    .reminder-item {
+        padding: 12px;
+    }
+    
+    .reminder-title {
+        font-size: 16px;
+    }
+}
+
+/* 動畫效果 */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.reminder-item {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* 主題顏色變量 */
+:root {
+    --primary-color: #3498db;
+    --primary-dark: #2980b9;
+    --danger-color: #e74c3c;
+    --danger-dark: #c0392b;
+    --text-color: #333;
+    --text-light: #7f8c8d;
+    --bg-color: #f5f5f5;
+    --card-color: #f9f9f9;
+    --border-color: #ddd;
+    --alert-bg: #fadbd8;
+}

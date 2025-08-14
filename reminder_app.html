@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提醒記事本</title>
+    <link rel="stylesheet" href="reminder_styles.css">
+    <meta name="description" content="一個簡單的提醒記事本，可以記錄事情和日期，並在日期前一周提醒您。">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3498db">
+</head>
+<body>
+    <div class="container">
+        <h1>提醒記事本</h1>
+        <p class="app-description">記錄重要事項，在到期前一週自動提醒您</p>
+        
+        <div class="form-container">
+            <div class="form-group">
+                <label for="title">事項標題：</label>
+                <input type="text" id="title" placeholder="請輸入事項標題" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="date">提醒日期：</label>
+                <input type="date" id="date" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="content">事項內容：</label>
+                <textarea id="content" placeholder="請輸入事項詳細內容"></textarea>
+            </div>
+            
+            <button id="add-reminder">新增提醒事項</button>
+        </div>
+        
+        <div class="filter-container">
+            <div class="search-group">
+                <input type="text" id="search-input" placeholder="搜尋提醒事項...">
+            </div>
+            
+            <div class="filter-group">
+                <label for="filter-select">篩選：</label>
+                <select id="filter-select">
+                    <option value="all">全部提醒事項</option>
+                    <option value="upcoming">即將到期（一週內）</option>
+                    <option value="future">未來提醒事項</option>
+                    <option value="past">已過期提醒事項</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="reminder-list">
+            <h2>提醒事項列表</h2>
+            <div id="reminders-container">
+                <p class="no-reminders">目前沒有提醒事項</p>
+            </div>
+        </div>
+        
+        <div class="import-export-container">
+            <button id="export-btn" onclick="exportReminders()">匯出提醒事項</button>
+            <label for="import-file" class="import-label">匯入提醒事項</label>
+            <input type="file" id="import-file" accept=".json" onchange="importReminders(event)" style="display: none;">
+        </div>
+    </div>
+    
+    <style>
+        /* 額外的樣式，用於模態框和提示訊息 */
+        .modal {
+            display: block;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #7f8c8d;
+            transition: color 0.3s;
+        }
+        
+        .close-btn:hover {
+            color: #e74c3c;
+        }
+        
+        .detail-date {
+            color: #7f8c8d;
+            margin: 10px 0 20px;
+            font-size: 16px;
+        }
+        
+        .detail-content {
+            margin-bottom: 30px;
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+        
+        .detail-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .days-left {
+            font-weight: bold;
+        }
+        
+        .alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            z-index: 1001;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(100px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .alert.success {
+            background-color: #2ecc71;
+        }
+        
+        .alert.error {
+            background-color: #e74c3c;
+        }
+        
+        .alert.fade-out {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        .filter-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0 20px;
+            gap: 20px;
+        }
+        
+        .search-group {
+            flex: 1;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .filter-group select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .reminder-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .edit-btn, .delete-btn {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .edit-btn {
+            background-color: #3498db;
+        }
+        
+        .delete-btn {
+            background-color: #e74c3c;
+        }
+        
+        .reminder-item.past {
+            border-left: 5px solid #95a5a6;
+            opacity: 0.8;
+        }
+        
+        .import-export-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+        
+        .import-label {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            display: inline-block;
+        }
+        
+        .import-label:hover {
+            background-color: #2980b9;
+        }
+        
+        #export-btn {
+            background-color: #2ecc71;
+        }
+        
+        #export-btn:hover {
+            background-color: #27ae60;
+        }
+    </style>
+    
+    <script src="reminder_script.js"></script>
+    <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js').catch(console.error);
+         });
+       }
+</script>
+
+</body>
+</html>
