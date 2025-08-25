@@ -1,4 +1,4 @@
-const CACHE_NAME = 'reminder-notes-v3'; // 換版本以清掉舊快取
+const CACHE_NAME = 'reminder-notes-v4'; // 換版本以清掉舊快取
 const CORE = [
   './reminder_app.html',
   './reminder_styles.css',
