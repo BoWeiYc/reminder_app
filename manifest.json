@@ -1,13 +1,13 @@
 {
   "name": "提醒記事本",
-  "short_name": "記事本",
+  "short_name": "超強記事本",
   "id": "/",
   "start_url": "/index.html",
   "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "browser"],
   "background_color": "#ffffff",
-  "theme_color": "#ff0000",
+  "theme_color": "#3498db",
   "lang": "zh-TW",
   "icons": [
     { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
