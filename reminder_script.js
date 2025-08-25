@@ -457,5 +457,96 @@ function importReminders(event) {
     event.target.value = '';
 }
 
+// === 通知權限 ===
+async function ensureNotificationPermission() {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  if (Notification.permission === 'denied') return false;
+  const res = await Notification.requestPermission();
+  return res === 'granted';
+}
+
+// === 取得／存回本地資料 ===
+function loadReminders() {
+  return JSON.parse(localStorage.getItem('reminders') || '[]');
+}
+function saveReminders(list) {
+  localStorage.setItem('reminders', JSON.stringify(list));
+}
+
+// === 日期工具 ===
+const DAY = 24 * 60 * 60 * 1000;
+function toDate(d) {
+  // 允許 'YYYY-MM-DD' 或 ISO 字串
+  if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
+    // 以當地時區 00:00 當天，避免跨時區誤差
+    const [y,m,day] = d.split('-').map(Number);
+    return new Date(y, m-1, day);
+  }
+  return new Date(d);
+}
+
+// === 發送一則「前 7 天」通知 ===
+function notify7Days(rem) {
+  if (!navigator.serviceWorker?.controller) return;
+  const title = `「${rem.title}」還有 7 天到期`;
+  const due = toDate(rem.dueDate).toLocaleDateString();
+  const options = {
+    body: `到期日：${due}\n內容：${rem.content || ''}`,
+    tag: `reminder-7d-${rem.id}`,  // 去重用
+    requireInteraction: false,
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    data: { id: rem.id, kind: '7d' }
+  };
+  navigator.serviceWorker.controller.postMessage({
+    type: 'SHOW_NOTIFICATION',
+    title,
+    options
+  });
+}
+
+// === 核心：掃描並觸發「前 7 天」通知 ===
+function scanAndNotify7Days() {
+  const list = loadReminders();
+  const now = Date.now();
+
+  let changed = false;
+  for (const r of list) {
+    if (r.notified7d) continue;           // 已發過就略過
+    const dueMs = toDate(r.dueDate).getTime();
+    if (isNaN(dueMs)) continue;           // 非法日期略過
+    const delta = dueMs - now;
+
+    // 條件：尚未到期（>0），而且已進入「距離到期 ≤ 7 天」區間
+    if (delta > 0 && delta <= 7 * DAY) {
+      notify7Days(r);
+      r.notified7d = true;                // 標記只發一次
+      changed = true;
+    }
+  }
+  if (changed) saveReminders(list);
+}
+
+// === 啟動流程 ===
+window.addEventListener('load', async () => {
+  // 確保 SW 已註冊（你的頁面已有 register 了）
+  const ok = await ensureNotificationPermission();
+
+  // 立刻掃一次（補發/準時發）
+  if (ok) scanAndNotify7Days();
+
+  // App 開著時，每小時掃一次
+  setInterval(() => {
+    if (document.visibilityState === 'visible') scanAndNotify7Days();
+  }, 60 * 60 * 1000);
+
+  // 使用者從背景回前景時再掃一次（避免錯過）
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') scanAndNotify7Days();
+  });
+});
+
+
 // 當頁面載入完成後初始化應用程式
 window.addEventListener('DOMContentLoaded', initApp);
